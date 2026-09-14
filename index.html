@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The TikTok Shop Collective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0a0a0c;
+    --panel:#131317;
+    --panel-2:#191a1f;
+    --line:#26262e;
+    --white:#f2f2f5;
+    --dim:#9a9aa5;
+    --blue:#00e5ff;
+    --blue-dim:#0a8fa3;
+    --red:#ff2a4d;
+    --red-dim:#8e1c2e;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);}
+  ::selection{background:var(--blue);color:var(--black);}
+
+  /* ---------- layout shell ---------- */
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- header ---------- */
+  header.hero{
+    border-bottom:1px solid var(--line);
+    padding:56px 0 40px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,229,255,0.08), transparent 40%),
+      radial-gradient(circle at 85% 60%, rgba(255,42,77,0.07), transparent 40%);
+    pointer-events:none;
+  }
+  .live-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:0.04em;
+    color:var(--red);
+    border:1px solid var(--red-dim);
+    background:rgba(255,42,77,0.06);
+    padding:5px 10px;border-radius:3px;
+    margin-bottom:22px;
+  }
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.25;}}
+
+  h1.title{
+    font-family:'TikTok Sans',sans-serif;
+    font-weight:700;
+    font-size:clamp(34px,6vw,64px);
+    line-height:1.02;
+    margin:0 0 20px;
+    letter-spacing:-0.01em;
+    color:var(--white);
+    text-shadow:0 0 22px rgba(0,229,255,0.35), 0 0 2px rgba(255,42,77,0.4);
+    animation:flicker 2.4s ease-out 1;
+  }
+  @keyframes flicker{
+    0%{opacity:0; text-shadow:0 0 2px var(--blue);}
+    8%{opacity:1;}
+    10%{opacity:0.3;}
+    12%{opacity:1;}
+    24%{opacity:0.5;text-shadow:0 0 30px var(--red);}
+    26%{opacity:1;}
+    100%{opacity:1; text-shadow:0 0 22px rgba(0,229,255,0.35), 0 0 2px rgba(255,42,77,0.4);}
+  }
+  .byline{
+    font-family:'TikTok Sans',sans-serif;
+    font-weight:500;
+    font-size:clamp(14px,1.6vw,18px);
+    color:var(--blue);
+    letter-spacing:0.02em;
+    margin:-6px 0 22px;
+  }
+  .thesis{
+    max-width:640px;
+    color:var(--dim);
+    font-size:15.5px;
+  }
+  .thesis strong{color:var(--white); font-weight:500;}
+
+  .stats{
+    display:flex; gap:32px; margin-top:30px; flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .stat b{
+    display:block; font-size:26px; color:var(--blue);
+  }
+  .stat span{font-size:11px; color:var(--dim); letter-spacing:0.05em;}
+
+  /* ---------- section headings ---------- */
+  h2.section-head{
+    font-family:'TikTok Sans',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    margin:0 0 4px;
+    color:var(--white);
+    border-left:3px solid var(--blue);
+    padding-left:12px;
+  }
+  .section-sub{color:var(--dim); font-size:13.5px; margin:6px 0 22px 15px;}
+
+  section{padding:44px 0;}
+
+  /* ---------- capture toggle + form ---------- */
+  .add-btn{
+    font-family:'JetBrains Mono',monospace;
+    background:var(--blue);
+    color:var(--black);
+    border:none;
+    padding:12px 18px;
+    font-size:13px;
+    font-weight:600;
+    border-radius:3px;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  .add-btn:hover{background:#33ecff;}
+
+  .capture-form{
+    display:none;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:24px;
+    margin-top:20px;
+  }
+  .capture-form.open{display:block;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block; font-family:'JetBrains Mono',monospace;
+    font-size:11.5px; color:var(--blue); letter-spacing:0.04em;
+    margin-bottom:6px;
+  }
+  .field input[type="text"], .field input[type="date"], .field textarea, .field select{
+    width:100%;
+    background:var(--black);
+    border:1px solid var(--line);
+    color:var(--white);
+    padding:10px 12px;
+    border-radius:4px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline:none; border-color:var(--blue);
+  }
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .chip-picker{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    border:1px solid var(--line);
+    color:var(--dim);
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .chip.active{border-color:var(--blue); color:var(--blue); background:rgba(0,229,255,0.08);}
+  .file-drop{
+    border:1.5px dashed var(--line);
+    border-radius:6px;
+    padding:22px;
+    text-align:center;
+    color:var(--dim);
+    cursor:pointer;
+    font-size:13px;
+  }
+  .file-drop:hover{border-color:var(--blue); color:var(--white);}
+  .file-drop img{max-height:160px; border-radius:4px; margin-top:10px;}
+  .submit-row{display:flex; align-items:center; gap:14px; margin-top:6px;}
+  .status-msg{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim);}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 26px;}
+
+  /* ---------- feed grid ---------- */
+  .feed{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding-bottom:18px;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  .feed::-webkit-scrollbar{height:9px;}
+  .feed::-webkit-scrollbar-track{background:var(--panel); border-radius:6px;}
+  .feed::-webkit-scrollbar-thumb{background:var(--blue-dim); border-radius:6px;}
+  .feed::-webkit-scrollbar-thumb:hover{background:var(--blue);}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:border-color .15s, box-shadow .15s;
+    flex:0 0 240px;
+    scroll-snap-align:start;
+  }
+  .card img.shot{width:100%; display:block; background:#000;}
+  .card.accent-blue:hover{border-color:var(--blue-dim); box-shadow:0 0 0 1px var(--blue-dim), 0 0 24px rgba(0,229,255,0.08);}
+  .card.accent-red:hover{border-color:var(--red-dim); box-shadow:0 0 0 1px var(--red-dim), 0 0 24px rgba(255,42,77,0.08);}
+  .card img.shot{height:300px; object-fit:cover;}
+  .card-body{padding:16px; display:flex; flex-direction:column; gap:10px; flex:1;}
+  .meta-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim);
+  }
+  .tags-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    border:1px solid var(--blue-dim); color:var(--blue);
+    padding:2px 8px; border-radius:20px;
+  }
+  .creator{color:var(--red); font-size:12.5px; font-family:'JetBrains Mono',monospace;}
+  .caption-box{
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  .caption-box p{color:var(--white); line-height:1.45;}
+  .caption-hint{font-size:10.5px; color:var(--dim); font-family:'JetBrains Mono',monospace; letter-spacing:0.04em; text-transform:uppercase;}
+
+  .empty{color:var(--dim); font-size:14px; padding:30px 0;}
+
+  footer .credit{
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.03em;
+    color:var(--dim);
+  }
+  footer{
+    border-top:1px solid var(--line);
+    padding:34px 0 50px;
+    color:var(--dim);
+    font-size:12.5px;
+  }
+  footer strong{color:var(--white);}
+
+  .snippet-box{
+    display:none;
+    background:var(--black);
+    border:1px solid var(--blue-dim);
+    border-radius:6px;
+    padding:18px 20px;
+    margin-top:18px;
+  }
+  .snippet-box.show{display:block;}
+  .snippet-box p{margin:0 0 10px; font-size:13px; color:var(--dim);}
+  .snippet-box textarea{
+    width:100%; min-height:120px;
+    background:var(--panel); color:var(--blue);
+    border:1px solid var(--line); border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    padding:10px; resize:vertical;
+  }
+  .snippet-actions{display:flex; gap:10px; margin-top:10px;}
+
+  .plan-block{
+    margin:28px 0 34px;
+    padding:22px 24px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .plan-grid{display:flex; flex-direction:column; gap:12px; margin-top:16px;}
+  .plan-item{display:grid; grid-template-columns:150px 1fr; gap:16px; font-size:14px;}
+  .plan-label{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--blue);
+    letter-spacing:0.04em; text-transform:uppercase; padding-top:1px;
+  }
+  .plan-value{color:var(--white);}
+  @media (max-width:560px){
+    .plan-item{grid-template-columns:1fr;}
+  }
+
+  @media (max-width:640px){
+    .row2{grid-template-columns:1fr;}
+    .disc-input{grid-template-columns:1fr; }
+    .stats{gap:22px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="live-tag"><span class="live-dot"></span>FIELD LOG — FYP CAPTURES</div>
+    <h1 class="title">THE TIKTOK SHOP<br>COLLECTIVE</h1>
+    <p class="byline">A Capture Project by Hailey Woodruff</p>
+    <p class="thesis">
+      What TikTok Shop advertises to me is rarely something I need or want. My algorithm tracks watch time,
+      rewatches, likes, shares, and searches — and it's convinced it knows what I'll buy.
+      <strong>I don't think it's right.</strong> This is a daily log of organic FYP ads, captured under a strict
+      rule set, to test how persistent and persuasive the algorithm's picks really are.
+    </p>
+    <div class="stats">
+      <div class="stat"><b id="stat-total">0</b><span>CAPTURES LOGGED</span></div>
+      <div class="stat"><b id="stat-days">0</b><span>DAYS ACTIVE</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2 class="section-head">The Capture Log</h2>
+    <p class="section-sub">Organic FYP ads only, TikTok Shop-linked, creator-for-commission, no AI-generated media. Scroll sideways to browse — product arrangement, organization, and layout will be updated weekly.</p>
+
+    <div class="plan-block">
+      <h2 class="section-head">Plan of Capture Action</h2>
+      <div class="plan-grid">
+        <div class="plan-item"><span class="plan-label">Target</span><span class="plan-value">TikTok App</span></div>
+        <div class="plan-item"><span class="plan-label">Time of Day</span><span class="plan-value">Between 1:00 PM – 3:00 PM</span></div>
+        <div class="plan-item"><span class="plan-label">Frequency</span><span class="plan-value">1 per scroll session</span></div>
+        <div class="plan-item"><span class="plan-label">Days per Week</span><span class="plan-value">Daily</span></div>
+        <div class="plan-item"><span class="plan-label">Misses</span><span class="plan-value">If I miss a day, I will fill the gap as needed</span></div>
+      </div>
+    </div>
+
+    <button class="add-btn" id="toggleForm">+ LOG A NEW CAPTURE</button>
+
+    <div class="capture-form" id="captureForm">
+      <div class="field">
+        <label>Screenshot</label>
+        <div class="file-drop" id="fileDrop">
+          <div id="fileDropText">Click to choose a screenshot, or drag one here</div>
+          <img id="filePreview" style="display:none;">
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Date Captured</label>
+          <input type="date" id="capDate">
+        </div>
+        <div class="field">
+          <label>Creator / Account Handle</label>
+          <input type="text" id="capCreator" placeholder="@handle">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Caption / Annotation</label>
+        <textarea id="capCaption" placeholder="What's the pitch? What tactic is it using?"></textarea>
+      </div>
+
+      <div class="submit-row">
+        <button class="add-btn" id="submitCapture">PREVIEW &amp; GENERATE CODE</button>
+        <span class="status-msg" id="formStatus"></span>
+      </div>
+
+      <div class="snippet-box" id="snippetBox">
+        <p>1. An image download should have started — save it into your repo's <strong style="color:var(--blue);">images/</strong> folder.<br>
+           2. Copy the code below and paste it into the <strong style="color:var(--blue);">POSTS</strong> array near the top of the script in index.html.<br>
+           3. Commit and push to GitHub.</p>
+        <textarea id="snippetText" readonly></textarea>
+        <div class="snippet-actions">
+          <button class="add-btn" id="copySnippet">COPY CODE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="feed" id="feed">
+      <div class="empty">Loading captures…</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="section-head" style="border-color:var(--red);">What This Should Do for a Reader</h2>
+    <p class="thesis" style="max-width:720px; margin-top:16px;">
+      When someone views my collection in December, I want them to think critically about their buying and
+      viewing habits. Advertisements and influencer culture surrounds us, so there must be some sort of pattern
+      embedded in our feeds that may or may not implicitly impact us when we view content online. The viewer
+      may come to realize that they are easily influenced. Sometimes, we scroll on past ads without even
+      stopping to watch, but when all the ads are on the screen as a collective, we may stop to realize
+      something bigger.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <strong>Guardrails:</strong> all captures come from public TikTok accounts and public posts. No private
+    information, private communications, or friends-only content is included. Inappropriate or offensive
+    products are excluded on sight. This project studies algorithmic persuasion, not the people behind it.
+    <div class="credit">The TikTok Shop Collective | CMM 502 | The Capture Project | Hailey Woodruff</div>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   THE CAPTURE LOG — fully static, no backend.
+   To add a new capture permanently: use the form to generate a code snippet
+   and download the image, then paste the snippet into the POSTS array below,
+   save the image into an "images/" folder next to this file, and push to GitHub.
+   ========================================================================== */
+const POSTS = [
+  // Example — replace with your own captures:
+  // { image: "images/example.jpg", capturedAt: "2026-09-01", creator: "@example", caption: "Sample note about the tactic used." },
+];
+
+function fmtDate(d){
+  if(!d) return '';
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+// ---------- image compression + local preview ----------
+function processImage(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve({canvas, dataUrl: canvas.toDataURL('image/jpeg', 0.72)});
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function downloadCanvas(canvas, filename){
+  canvas.toBlob(blob=>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 'image/jpeg', 0.8);
+}
+
+// ---------- state ----------
+let allPosts = [...POSTS];
+let pendingImage = null; // {canvas, dataUrl}
+
+// ---------- form interactions ----------
+document.getElementById('toggleForm').addEventListener('click', ()=>{
+  document.getElementById('captureForm').classList.toggle('open');
+});
+
+document.getElementById('fileDrop').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  pendingImage = await processImage(file);
+  const preview = document.getElementById('filePreview');
+  preview.src = pendingImage.dataUrl;
+  preview.style.display = 'block';
+  document.getElementById('fileDropText').textContent = file.name;
+});
+
+document.getElementById('submitCapture').addEventListener('click', ()=>{
+  const status = document.getElementById('formStatus');
+  if(!pendingImage){ status.textContent = 'Add a screenshot first.'; return; }
+  const date = document.getElementById('capDate').value || new Date().toISOString().slice(0,10);
+  const creator = document.getElementById('capCreator').value.trim();
+  const caption = document.getElementById('capCaption').value.trim();
+
+  const filename = `capture-${date}-${Date.now().toString(36)}.jpg`;
+  downloadCanvas(pendingImage.canvas, filename);
+
+  const newPost = {
+    image: pendingImage.dataUrl, // local preview only; committed version uses the images/ path below
+    capturedAt: date,
+    creator: creator,
+    caption: caption
+  };
+  allPosts = [newPost, ...allPosts];
+  renderFeed();
+  renderStats();
+
+  const snippet =
+`  { image: "images/${filename}", capturedAt: "${date}", creator: ${JSON.stringify(creator)}, caption: ${JSON.stringify(caption)} },`;
+  const snippetBox = document.getElementById('snippetBox');
+  const snippetText = document.getElementById('snippetText');
+  snippetText.value = snippet;
+  snippetBox.classList.add('show');
+
+  status.textContent = 'Previewed below — finish the 3 steps to make it permanent.';
+
+  pendingImage = null;
+  document.getElementById('capCreator').value = '';
+  document.getElementById('capCaption').value = '';
+  document.getElementById('capDate').value = '';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('fileDropText').textContent = 'Click to choose a screenshot, or drag one here';
+  document.getElementById('fileInput').value = '';
+});
+
+document.getElementById('copySnippet').addEventListener('click', ()=>{
+  const snippetText = document.getElementById('snippetText');
+  snippetText.select();
+  navigator.clipboard.writeText(snippetText.value).catch(()=>{ document.execCommand('copy'); });
+});
+
+// ---------- render feed ----------
+function renderFeed(){
+  const feed = document.getElementById('feed');
+  if(allPosts.length === 0){
+    feed.innerHTML = '<div class="empty">No captures logged yet.</div>';
+    return;
+  }
+  feed.innerHTML = allPosts.map((p, i)=>{
+    const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
+    return `
+    <div class="card ${accent}">
+      <img class="shot" src="${p.image}">
+      <div class="card-body">
+        <div class="meta-row">
+          <span>${fmtDate(p.capturedAt)}</span>
+          ${p.creator ? `<span class="creator">${escapeHtml(p.creator)}</span>` : ''}
+        </div>
+        <div class="caption-box">
+          <div class="caption-hint">Annotation</div>
+          <p style="margin:6px 0 0; font-size:14px;">${escapeHtml(p.caption || '—')}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+// ---------- stats ----------
+function renderStats(){
+  document.getElementById('stat-total').textContent = allPosts.length;
+  const uniqueDays = new Set(allPosts.map(p=>p.capturedAt)).size;
+  document.getElementById('stat-days').textContent = uniqueDays;
+}
+
+// ---------- init ----------
+renderFeed();
+renderStats();
+</script>
+
+</body>
+</html>
