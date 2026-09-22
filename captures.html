@@ -206,12 +206,13 @@
   /* ---------- feed grid ---------- */
   .feed{
     display:flex;
-    gap:18px;
+    gap:0;
     overflow-x:auto;
     overflow-y:hidden;
-    padding-bottom:18px;
+    padding:30px 40px 34px 60px;
     scroll-snap-type:x proximity;
     -webkit-overflow-scrolling:touch;
+    perspective:1000px;
   }
   .feed::-webkit-scrollbar{height:9px;}
   .feed::-webkit-scrollbar-track{background:var(--panel); border-radius:6px;}
@@ -223,16 +224,18 @@
     border-radius:20px;
     overflow:hidden;
     display:flex; flex-direction:column;
-    transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease, border-color .2s ease;
+    transition:transform .25s cubic-bezier(.22,1,.36,1), box-shadow .2s ease, border-color .2s ease, z-index 0s;
     flex:0 0 250px;
     scroll-snap-align:start;
     box-shadow:0 6px 0 rgba(0,0,0,0.35);
+    margin-left:-70px;
+    will-change:transform;
+    position:relative;
   }
-  .card.accent-blue{ transform:rotate(-1.1deg); }
-  .card.accent-red{ transform:rotate(1deg); }
+  .card:first-child{ margin-left:0; }
   .card img.shot{width:100%; display:block; background:#000;}
-  .card.accent-blue:hover{border-color:var(--blue); transform:rotate(0deg) translateY(-6px) scale(1.03); box-shadow:0 12px 0 rgba(0,0,0,0.35), 0 0 26px rgba(0,229,255,0.25);}
-  .card.accent-red:hover{border-color:var(--red); transform:rotate(0deg) translateY(-6px) scale(1.03); box-shadow:0 12px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,42,77,0.25);}
+  .card.accent-blue:hover{border-color:var(--blue); box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(0,229,255,0.3);}
+  .card.accent-red:hover{border-color:var(--red); box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(255,42,77,0.3);}
   .card img.shot{height:300px; object-fit:cover;}
   .card-body{padding:16px; display:flex; flex-direction:column; gap:10px; flex:1;}
   .meta-row{
@@ -355,9 +358,70 @@
     .disc-input{grid-template-columns:1fr; }
     .stats{gap:22px;}
   }
+
+  /* ---------- grain texture + depth layers ---------- */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:0.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .depth-blob{
+    position:fixed;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:0;
+  }
+  .depth-blob-1{
+    width:520px; height:520px; top:-120px; left:-160px;
+    background:radial-gradient(circle, rgba(0,229,255,0.12), transparent 70%);
+    filter:blur(60px);
+  }
+  .depth-blob-2{
+    width:600px; height:600px; bottom:-200px; right:-200px;
+    background:radial-gradient(circle, rgba(255,42,77,0.10), transparent 70%);
+    filter:blur(70px);
+  }
+  .depth-blob-3{
+    width:360px; height:360px; top:45%; left:60%;
+    background:radial-gradient(circle, rgba(0,229,255,0.06), transparent 70%);
+    filter:blur(50px);
+  }
+  .cursor-glow{
+    position:fixed;
+    width:340px; height:340px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:0;
+    background:radial-gradient(circle, rgba(0,229,255,0.10), rgba(255,42,77,0.06) 55%, transparent 75%);
+    filter:blur(20px);
+    transform:translate(-50%,-50%);
+    transition:left .25s ease-out, top .25s ease-out;
+    left:50%; top:30%;
+  }
+  header.hero, section, footer{ position:relative; z-index:2; }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .reveal.visible{
+    opacity:1;
+    transform:translateY(0);
+  }
 </style>
 </head>
 <body>
+
+<div class="depth-blob depth-blob-1"></div>
+<div class="depth-blob depth-blob-2"></div>
+<div class="depth-blob depth-blob-3"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
 
 <header class="hero">
   <div class="wrap">
@@ -374,7 +438,7 @@
   </div>
 </header>
 
-<section>
+<section class="reveal">
   <div class="wrap">
     <p class="section-sub" style="margin-left:0;">Organic FYP ads only, TikTok Shop-linked, creator-for-commission, no AI-generated media. Scroll sideways to browse — product arrangement, organization, and layout will be updated weekly.</p>
 
@@ -571,8 +635,9 @@ function renderFeed(){
   }
   feed.innerHTML = allPosts.map((p, i)=>{
     const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
+    const baseRot = (i % 2 === 0 ? -3 : 3) - (i % 3);
     return `
-    <div class="card ${accent}">
+    <div class="card ${accent}" data-base-rot="${baseRot}" style="transform:rotate(${baseRot}deg);">
       <img class="shot" src="${p.image}">
       <div class="card-body">
         <div class="meta-row">
@@ -586,6 +651,39 @@ function renderFeed(){
       </div>
     </div>`;
   }).join('');
+
+  wireCardInteractions();
+}
+
+function wireCardInteractions(){
+  const cards = Array.from(document.querySelectorAll('#feed .card'));
+  cards.forEach((card, idx)=>{
+    const baseRot = parseFloat(card.dataset.baseRot) || 0;
+    const prev = cards[idx - 1];
+    const next = cards[idx + 1];
+
+    card.addEventListener('mouseenter', ()=>{
+      card.style.zIndex = 50;
+      if(prev){ prev.style.transform = `rotate(${parseFloat(prev.dataset.baseRot)}deg) translateX(-30px)`; }
+      if(next){ next.style.transform = `rotate(${parseFloat(next.dataset.baseRot)}deg) translateX(30px)`; }
+    });
+
+    card.addEventListener('mousemove', (e)=>{
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      const tiltX = (y * -14).toFixed(2);
+      const tiltY = (x * 14).toFixed(2);
+      card.style.transform = `translateY(-14px) scale(1.06) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+    });
+
+    card.addEventListener('mouseleave', ()=>{
+      card.style.zIndex = '';
+      card.style.transform = `rotate(${baseRot}deg)`;
+      if(prev){ prev.style.transform = `rotate(${parseFloat(prev.dataset.baseRot)}deg)`; }
+      if(next){ next.style.transform = `rotate(${parseFloat(next.dataset.baseRot)}deg)`; }
+    });
+  });
 }
 
 function escapeHtml(str){
@@ -604,6 +702,34 @@ function renderStats(){
 // ---------- init ----------
 renderFeed();
 renderStats();
+
+// cursor-follow glow
+(function(){
+  const glow = document.getElementById('cursorGlow');
+  if(!glow) return;
+  document.addEventListener('mousemove', (e)=>{
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+  });
+})();
+
+// scroll-triggered reveal
+(function(){
+  const targets = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    targets.forEach(t=>t.classList.add('visible'));
+    return;
+  }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.15});
+  targets.forEach(t=>io.observe(t));
+})();
 </script>
 
 </body>
