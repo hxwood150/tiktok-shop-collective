@@ -222,21 +222,57 @@
     background:var(--panel);
     border:3px solid var(--line);
     border-radius:20px;
-    overflow:hidden;
-    display:flex; flex-direction:column;
-    transition:transform .25s cubic-bezier(.22,1,.36,1), box-shadow .2s ease, border-color .2s ease, z-index 0s;
+    transition:transform .25s cubic-bezier(.22,1,.36,1), z-index 0s;
     flex:0 0 250px;
     scroll-snap-align:start;
     box-shadow:0 6px 0 rgba(0,0,0,0.35);
     margin-left:-70px;
     will-change:transform;
     position:relative;
+    height:420px;
+    perspective:1200px;
+    transform:rotate(var(--rot, 0deg));
   }
+  .card:hover{ transform:rotate(var(--rot, 0deg)) translateY(-10px) scale(1.05); }
   .card:first-child{ margin-left:0; }
-  .card img.shot{width:100%; display:block; background:#000;}
-  .card.accent-blue:hover{border-color:var(--blue); box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(0,229,255,0.3);}
-  .card.accent-red:hover{border-color:var(--red); box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(255,42,77,0.3);}
-  .card img.shot{height:300px; object-fit:cover;}
+  .card.accent-blue:hover{box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(0,229,255,0.3);}
+  .card.accent-red:hover{box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(255,42,77,0.3);}
+
+  .card-flip-inner{
+    position:relative; width:100%; height:100%;
+    transition:transform .6s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+    cursor:pointer;
+  }
+  .card-flip-inner.flipped{ transform:rotateY(180deg); }
+  .card-face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    border-radius:17px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .card-front img.shot{ width:100%; height:100%; object-fit:cover; display:block; }
+  .card-front .meta-overlay{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:14px 12px 12px;
+    background:linear-gradient(to top, rgba(0,0,0,0.88), transparent);
+    display:flex; gap:6px; flex-wrap:wrap;
+  }
+  .flip-hint{
+    position:absolute; top:10px; right:10px;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:10.5px; color:var(--white);
+    background:rgba(0,0,0,0.55); padding:4px 10px; border-radius:999px;
+  }
+  .card-back{
+    transform:rotateY(180deg);
+    background:var(--panel);
+    padding:18px;
+    overflow-y:auto;
+    justify-content:space-between;
+  }
+  .card-back .caption-box{ border-top:none; padding-top:0; }
   .card-body{padding:16px; display:flex; flex-direction:column; gap:10px; flex:1;}
   .meta-row{
     display:flex; justify-content:space-between; align-items:center;
@@ -637,16 +673,25 @@ function renderFeed(){
     const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
     const baseRot = (i % 2 === 0 ? -3 : 3) - (i % 3);
     return `
-    <div class="card ${accent}" data-base-rot="${baseRot}" style="transform:rotate(${baseRot}deg);">
-      <img class="shot" src="${p.image}">
-      <div class="card-body">
-        <div class="meta-row">
-          <span class="date-pill">${fmtDate(p.capturedAt)}</span>
-          ${p.creator ? `<span class="creator">${escapeHtml(p.creator)}</span>` : ''}
+    <div class="card ${accent}" data-base-rot="${baseRot}" style="--rot:${baseRot}deg;">
+      <div class="card-flip-inner">
+        <div class="card-face card-front">
+          <img class="shot" src="${p.image}">
+          <div class="flip-hint">👆 Flip</div>
+          <div class="meta-overlay">
+            <span class="date-pill">${fmtDate(p.capturedAt)}</span>
+            ${p.creator ? `<span class="creator">${escapeHtml(p.creator)}</span>` : ''}
+          </div>
         </div>
-        <div class="caption-box">
-          <div class="caption-hint">📝 Annotation</div>
-          <p style="margin:6px 0 0; font-size:14px;">${escapeHtml(p.caption || '—')}</p>
+        <div class="card-face card-back">
+          <div class="caption-box">
+            <div class="caption-hint">📝 Annotation</div>
+            <p style="margin:6px 0 0; font-size:14px;">${escapeHtml(p.caption || '—')}</p>
+          </div>
+          <div class="meta-row">
+            <span class="date-pill">${fmtDate(p.capturedAt)}</span>
+            ${p.creator ? `<span class="creator">${escapeHtml(p.creator)}</span>` : ''}
+          </div>
         </div>
       </div>
     </div>`;
@@ -658,9 +703,13 @@ function renderFeed(){
 function wireCardInteractions(){
   const cards = Array.from(document.querySelectorAll('#feed .card'));
   cards.forEach((card, idx)=>{
-    const baseRot = parseFloat(card.dataset.baseRot) || 0;
     const prev = cards[idx - 1];
     const next = cards[idx + 1];
+    const inner = card.querySelector('.card-flip-inner');
+
+    inner.addEventListener('click', ()=>{
+      inner.classList.toggle('flipped');
+    });
 
     card.addEventListener('mouseenter', ()=>{
       card.style.zIndex = 50;
@@ -668,20 +717,10 @@ function wireCardInteractions(){
       if(next){ next.style.transform = `rotate(${parseFloat(next.dataset.baseRot)}deg) translateX(30px)`; }
     });
 
-    card.addEventListener('mousemove', (e)=>{
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      const tiltX = (y * -14).toFixed(2);
-      const tiltY = (x * 14).toFixed(2);
-      card.style.transform = `translateY(-14px) scale(1.06) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-    });
-
     card.addEventListener('mouseleave', ()=>{
       card.style.zIndex = '';
-      card.style.transform = `rotate(${baseRot}deg)`;
-      if(prev){ prev.style.transform = `rotate(${parseFloat(prev.dataset.baseRot)}deg)`; }
-      if(next){ next.style.transform = `rotate(${parseFloat(next.dataset.baseRot)}deg)`; }
+      if(prev){ prev.style.transform = ''; }
+      if(next){ next.style.transform = ''; }
     });
   });
 }
