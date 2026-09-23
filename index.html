@@ -37,7 +37,7 @@
   /* ---------- header ---------- */
   header.hero{
     border-bottom:1px solid var(--line);
-    padding:56px 0 40px;
+    padding:76px 0 60px;
     position:relative;
     overflow:hidden;
   }
@@ -94,9 +94,10 @@
     margin:-6px 0 22px;
   }
   .thesis{
-    max-width:640px;
+    max-width:700px;
     color:var(--dim);
-    font-size:15.5px;
+    font-size:17.5px;
+    line-height:1.65;
   }
   .thesis strong{color:var(--white); font-weight:500;}
 
@@ -115,16 +116,16 @@
   h2.section-head{
     font-family:'TikTok Sans',sans-serif;
     font-weight:700;
-    font-size:23px;
+    font-size:28px;
     margin:0 0 4px;
     color:var(--white);
     border-left:5px solid var(--blue);
     border-radius:3px;
-    padding-left:14px;
+    padding-left:16px;
   }
   .section-sub{color:var(--dim); font-size:13.5px; margin:6px 0 22px 15px;}
 
-  section{padding:44px 0;}
+  section{padding:64px 0;}
 
   /* ---------- capture toggle + form ---------- */
   .add-btn{
@@ -264,9 +265,6 @@
   .empty{color:var(--dim); font-size:14px; padding:30px 0;}
 
   footer .credit{
-    margin-top:24px;
-    padding-top:18px;
-    border-top:1px solid var(--line);
     text-align:center;
     font-family:'Fredoka',sans-serif;
     font-size:11.5px;
@@ -306,20 +304,20 @@
     text-align:center;
     font-family:'Fredoka',sans-serif;
     font-weight:700;
-    font-size:21px;
+    font-size:27px;
     color:var(--black);
     background:linear-gradient(135deg, var(--blue), var(--red));
-    padding:26px 24px;
-    border-radius:20px;
+    padding:38px 24px;
+    border-radius:22px;
     margin-bottom:8px;
-    box-shadow:0 6px 0 rgba(0,0,0,0.4);
+    box-shadow:0 8px 0 rgba(0,0,0,0.4);
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .banner-link:hover{transform:translateY(-3px); box-shadow:0 9px 0 rgba(0,0,0,0.4);}
-  .banner-link:active{transform:translateY(1px); box-shadow:0 2px 0 rgba(0,0,0,0.4);}
+  .banner-link:hover{transform:translateY(-3px); box-shadow:0 11px 0 rgba(0,0,0,0.4);}
+  .banner-link:active{transform:translateY(1px); box-shadow:0 3px 0 rgba(0,0,0,0.4);}
   .banner-link small{
     display:block; font-family:'Inter',sans-serif; font-weight:400;
-    font-size:13px; margin-top:6px; opacity:0.8;
+    font-size:14.5px; margin-top:8px; opacity:0.8;
   }
   .back-link{
     display:inline-flex; align-items:center; gap:6px;
@@ -456,23 +454,35 @@
 
 <section class="reveal">
   <div class="wrap">
-    <h2 class="section-head" style="border-color:var(--red);">What This Should Do for a Reader</h2>
-    <p class="thesis" style="max-width:720px; margin-top:16px;">
-      When someone views my collection in December, I want them to think critically about their buying and
-      viewing habits. Advertisements and influencer culture surrounds us, so there must be some sort of pattern
-      embedded in our feeds that may or may not implicitly impact us when we view content online. The viewer
-      may come to realize that they are easily influenced. Sometimes, we scroll on past ads without even
-      stopping to watch, but when all the ads are on the screen as a collective, we may stop to realize
-      something bigger.
-    </p>
+    <div class="plan-block" style="border-color:var(--red-dim);">
+      <h2 class="section-head" style="border-color:var(--red);">What This Should Do for a Reader</h2>
+      <p class="thesis" style="max-width:720px; margin-top:16px; font-size:18px;">
+        When someone views my collection in December, I want them to think critically about their buying and
+        viewing habits. Advertisements and influencer culture surrounds us, so there must be some sort of pattern
+        embedded in our feeds that may or may not implicitly impact us when we view content online. The viewer
+        may come to realize that they are easily influenced. Sometimes, we scroll on past ads without even
+        stopping to watch, but when all the ads are on the screen as a collective, we may stop to realize
+        something bigger.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="wrap">
+    <div class="plan-block">
+      <h2 class="section-head">Guardrails</h2>
+      <p class="thesis" style="max-width:720px; margin-top:16px; font-size:18px;">
+        All captures come from public TikTok accounts and public posts. No private information, private
+        communications, or friends-only content is included. Inappropriate or offensive products are excluded
+        on sight. This project studies algorithmic persuasion, not the people behind it.
+      </p>
+    </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <strong>Guardrails:</strong> all captures come from public TikTok accounts and public posts. No private
-    information, private communications, or friends-only content is included. Inappropriate or offensive
-    products are excluded on sight. This project studies algorithmic persuasion, not the people behind it.
     <div class="credit">The TikTok Shop Collective | CMM 502 | The Capture Project | Hailey Woodruff</div>
   </div>
 </footer>
