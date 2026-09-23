@@ -327,6 +327,17 @@
   }
   .back-link:hover{color:#33ecff;}
 
+  .rules-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; }
+  .rules-list li{
+    position:relative; padding-left:24px;
+    color:var(--white); font-size:16px; line-height:1.55;
+    font-family:'Inter',sans-serif;
+  }
+  .rules-list li::before{
+    content:"■"; position:absolute; left:0; top:1px;
+    color:var(--red); font-size:10px;
+  }
+
   .plan-block{
     margin:28px 0 34px;
     padding:22px 24px;
@@ -431,6 +442,23 @@
     </p>
   </div>
 </header>
+
+<section class="reveal">
+  <div class="wrap">
+    <h2 class="section-head" style="border-color:var(--red);">Capture Rules</h2>
+    <div class="plan-block" style="border-color:var(--red-dim);">
+      <p class="thesis" style="max-width:720px; font-size:18px; margin-bottom:16px;">All captures:</p>
+      <ul class="rules-list">
+        <li>Must come from my for you page on the TikTok app.</li>
+        <li>Must include working TikTok shop button.</li>
+        <li>Must not include external links to Amazon or seller websites.</li>
+        <li>Must appear organically (not from my following page, shop page, or search function).</li>
+        <li>Must come from a creator selling for commission. No branded accounts.</li>
+        <li>Must not contain AI generated media.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
 <section class="reveal">
   <div class="wrap">
