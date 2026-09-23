@@ -205,36 +205,21 @@
 
   /* ---------- feed grid ---------- */
   .feed{
-    display:flex;
-    gap:0;
-    overflow-x:auto;
-    overflow-y:hidden;
-    padding:30px 40px 34px 60px;
-    scroll-snap-type:x proximity;
-    -webkit-overflow-scrolling:touch;
-    perspective:1000px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:24px;
+    padding:6px 0 20px;
   }
-  .feed::-webkit-scrollbar{height:9px;}
-  .feed::-webkit-scrollbar-track{background:var(--panel); border-radius:6px;}
-  .feed::-webkit-scrollbar-thumb{background:var(--blue-dim); border-radius:6px;}
-  .feed::-webkit-scrollbar-thumb:hover{background:var(--blue);}
   .card{
     background:var(--panel);
     border:3px solid var(--line);
     border-radius:20px;
-    transition:transform .25s cubic-bezier(.22,1,.36,1), z-index 0s;
-    flex:0 0 250px;
-    scroll-snap-align:start;
-    box-shadow:0 6px 0 rgba(0,0,0,0.35);
-    margin-left:-70px;
-    will-change:transform;
+    transition:transform .2s ease, box-shadow .2s ease;
     position:relative;
     height:420px;
     perspective:1200px;
-    transform:rotate(var(--rot, 0deg));
   }
-  .card:hover{ transform:rotate(var(--rot, 0deg)) translateY(-10px) scale(1.05); }
-  .card:first-child{ margin-left:0; }
+  .card:hover{ transform:translateY(-6px); }
   .card.accent-blue:hover{box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(0,229,255,0.3);}
   .card.accent-red:hover{box-shadow:0 16px 30px rgba(0,0,0,0.5), 0 0 26px rgba(255,42,77,0.3);}
 
@@ -671,9 +656,8 @@ function renderFeed(){
   }
   feed.innerHTML = allPosts.map((p, i)=>{
     const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
-    const baseRot = (i % 2 === 0 ? -3 : 3) - (i % 3);
     return `
-    <div class="card ${accent}" data-base-rot="${baseRot}" style="--rot:${baseRot}deg;">
+    <div class="card ${accent}">
       <div class="card-flip-inner">
         <div class="card-face card-front">
           <img class="shot" src="${p.image}">
@@ -702,25 +686,10 @@ function renderFeed(){
 
 function wireCardInteractions(){
   const cards = Array.from(document.querySelectorAll('#feed .card'));
-  cards.forEach((card, idx)=>{
-    const prev = cards[idx - 1];
-    const next = cards[idx + 1];
+  cards.forEach((card)=>{
     const inner = card.querySelector('.card-flip-inner');
-
     inner.addEventListener('click', ()=>{
       inner.classList.toggle('flipped');
-    });
-
-    card.addEventListener('mouseenter', ()=>{
-      card.style.zIndex = 50;
-      if(prev){ prev.style.transform = `rotate(${parseFloat(prev.dataset.baseRot)}deg) translateX(-30px)`; }
-      if(next){ next.style.transform = `rotate(${parseFloat(next.dataset.baseRot)}deg) translateX(30px)`; }
-    });
-
-    card.addEventListener('mouseleave', ()=>{
-      card.style.zIndex = '';
-      if(prev){ prev.style.transform = ''; }
-      if(next){ next.style.transform = ''; }
     });
   });
 }
