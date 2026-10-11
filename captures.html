@@ -203,6 +203,61 @@
   /* ---------- filters ---------- */
   .filters{display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 26px;}
 
+  /* ---------- folders (album view) ---------- */
+  .albums{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+    gap:34px 22px;
+    padding:20px 0 20px;
+  }
+  .album{
+    background:none; border:none; padding:0; margin:0;
+    font:inherit; color:inherit; text-align:left;
+    cursor:pointer;
+    display:flex; flex-direction:column; gap:10px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .album-cover{
+    position:relative;
+    width:100%;
+    padding-top:100%;
+    border-radius:18px;
+    overflow:hidden;
+    background:var(--panel);
+    box-shadow:0 -6px 0 -3px #202027, 0 -12px 0 -6px #17171c;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .album-cover img{
+    position:absolute; top:0; left:0;
+    width:100%; height:100%;
+    object-fit:cover; display:block;
+  }
+  .album-cover::after{
+    content:"";
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    border-radius:18px;
+    box-shadow:inset 0 0 0 3px var(--line);
+    pointer-events:none;
+    transition:box-shadow .2s ease;
+  }
+  .album:hover .album-cover{ transform:translateY(-5px); }
+  .album.accent-blue:hover .album-cover{
+    box-shadow:0 -6px 0 -3px #202027, 0 -12px 0 -6px #17171c, 0 16px 28px rgba(0,0,0,0.5), 0 0 24px rgba(0,229,255,0.28);
+  }
+  .album.accent-red:hover .album-cover{
+    box-shadow:0 -6px 0 -3px #202027, 0 -12px 0 -6px #17171c, 0 16px 28px rgba(0,0,0,0.5), 0 0 24px rgba(255,42,77,0.28);
+  }
+  .album.accent-blue:hover .album-cover::after{ box-shadow:inset 0 0 0 3px var(--blue); }
+  .album.accent-red:hover .album-cover::after{ box-shadow:inset 0 0 0 3px var(--red); }
+  .album-name{
+    font-family:'TikTok Sans',sans-serif; font-weight:700; font-size:16px;
+    color:var(--white); line-height:1.2; padding:0 2px;
+  }
+  .album-count{
+    font-family:'Fredoka',sans-serif; font-size:12.5px; color:var(--dim);
+    margin-top:-6px; padding:0 2px;
+  }
+
   /* ---------- feed grid ---------- */
   .feed{
     display:grid;
@@ -488,6 +543,17 @@
         </div>
       </div>
 
+      <div class="row2">
+        <div class="field">
+          <label>Folder</label>
+          <select id="capFolder"></select>
+        </div>
+        <div class="field" id="newFolderField" style="display:none;">
+          <label>New Folder Name</label>
+          <input type="text" id="capNewFolder" placeholder="e.g. Bags">
+        </div>
+      </div>
+
       <div class="field">
         <label>Caption / Annotation</label>
         <textarea id="capCaption" placeholder="What's the pitch? What tactic is it using?"></textarea>
@@ -509,8 +575,20 @@
       </div>
     </div>
 
-    <div class="feed" id="feed">
-      <div class="empty">Loading captures…</div>
+    <div id="viewTop"></div>
+
+    <div id="albumsView">
+      <p class="section-sub" style="margin-left:0; margin-top:26px; margin-bottom:0;">Tap a folder to open it.</p>
+      <div class="albums" id="albums">
+        <div class="empty">Loading captures…</div>
+      </div>
+    </div>
+
+    <div id="folderView" style="display:none;">
+      <a class="back-link" href="#folders" style="margin-top:26px;">← All Folders</a>
+      <h2 class="section-head" id="folderTitle" style="font-size:30px;"></h2>
+      <p class="section-sub" id="folderCount"></p>
+      <div class="feed" id="feed"></div>
     </div>
   </div>
 </section>
@@ -530,37 +608,45 @@
    To add a new capture permanently: use the form to generate a code snippet
    and download the image, then paste the snippet into the POSTS array below,
    save the image into an "images/" folder next to this file, and push to GitHub.
+
+   FOLDERS: each capture has a  folder: "..."  label. Folders appear on the page
+   automatically from those labels. To move a capture, change the word after
+   folder:  — to make a new folder, just use a new name.
    ========================================================================== */
+const FOLDER_ORDER = ["Shirts","Shoes","Non-clothing","Pants","Dresses","Socks","Accessories","Coats/Jackets"];
+const ALL = "All Captures";
+
 const POSTS = [
-  { image: "images/capture-2026-08-31-mubhdyrs.jpg", capturedAt: "2026-08-31", creator: "@Itshillarycatherine", caption: "Back in May and June, I was looking for clothes for my internship at the time. This top was actually in my saved items list over the summer until I removed it. The algorithm brought it back to try and change my mind. It is interesting how TikTok keeps a lot of what we view, click, like, etc. It remembered and made a second attempt months later." },
-  { image: "images/capture-2026-09-01-mubykpg8.jpg", capturedAt: "2026-09-01", creator: "@i shop tooo much", caption: "The video says that the shoes are super comfortable and stretchy, but I know they wouldn't suit me. They aren't my style, I have flat feet, and wear orthotics in my shoes. I always need wider shoes in larger sizes that would fit inserts. I normally wear either boots or sneakers, so these wouldn't strike me as something I would ever want. This product just didn't hit the nail on the head for my personal tastes." },
-  { image: "images/capture-2026-09-02-mubzli2o.jpg", capturedAt: "2026-09-02", creator: "@Bailey Trost", caption: "This body trimmer is nice, but I already own one that does the job well. I wouldn't spend my money on a product that serves the same function of a tool I already use and have learned to love over the years. The mirror is cool and the twistable unit is a selling point, but not a reason for me to buy a whole new one." },
-  { image: "images/capture-2026-09-03-mubzwsej.jpg", capturedAt: "2026-09-03", creator: "@theparenttrail", caption: "Okay, so apparently my phone listens through my screen because now we have boots lol. It is the beginning of September, so I can see why the marketing tactic is buy it before winter while they are at a low price. I have a shoe collecting problem and I currently own three pairs of boots so I am passing on these. Maybe when my current boots fall apart, but that won't be this time around, nice try though, TikTok." },
-  { image: "images/capture-2026-09-04-muc06ggb.jpg", capturedAt: "2026-09-04", creator: "@Cassidy'sCuteFinds", caption: "This dress would be lovely if I weren't five foot tall and had weddings to attend this fall. I truly don't have any occasions where I need to wear dresses to be honest, but the built in bra is a good selling point. I fear I would be swimming in the fabric and stumbling around if I bought this. I am more of a try it on in person type of gal when it comes to dresses!" },
-  { image: "images/capture-2026-09-05-muc0jumx.jpg", capturedAt: "2026-09-05", creator: "@justamomfinds", caption: "This handheld sewing gun would be good for quick fixes for sure. I am not sold that the creator actually takes it with her \"literally everywhere\" from the caption. The caption seemed like more of an exaggeration to influence others to buy it. Very interesting and potentially useful product, but I when I saw it I didn't scream \"I NEED IT\". Not for me, but maybe for someone else." },
-  { image: "images/capture-2026-09-06-muc18bfn.jpg", capturedAt: "2026-09-06", creator: "@julesgracie", caption: "To be completely honest and transparent, I am just not a stripe person. I like solid colors and plain pieces. I am interested in seeing whether or not the algorithm will bring this one back because if I weren't doing this capture project, I would have instantly scrolled away. Maybe my phone will listen again and show me the shirt in solid colors. Only time will tell." },
-  { image: "images/capture-2026-09-07-mufjffql.jpg", capturedAt: "2026-09-07", creator: "@Claraty || TT shop finds", caption: "The caption for this ad made me laugh because \"ice maker\" is in quotes. It is really just an ice tray that when pressed, releases the ice cubes. There is nothing special or sticking out to me about the product, I have an ice maker at home. However, I noticed this post has a special listed on the TikTok shop button: FLASH SALE! I have definitely fallen victim in the past to a good \"deal\" with online shopping so it caught my eye. I urge viewers to think critically when seeing these sale items appear. Check for quality, reviews, and competing brands before buying on impulse." },
-  { image: "images/capture-2026-09-08-mug2john.jpg", capturedAt: "2026-09-08", creator: "@Itshillarycatherine", caption: "Hillary is back for the second time! Same product, same creator, same room. I instantly noticed she changed out of jeans and into a skirt. The skirt and top combo is less appealing to me because I exclusively wear jeans. I am actually less influenced to buy this top now that I've seen it not once, not twice, but three times. I noticed it is basically the same ad but with new hashtags, dimensions listed on the screen, and more info included in the TikTok shop button. At this point in my scrolling, I would have selected the not interested button and hit repetitive as the reason but for the sake of this project, let's see just how many times this product pops up in my feed." },
-  { image: "images/capture-2026-09-09-mug3vvtn.jpg", capturedAt: "2026-09-09", creator: "@MADI TAYLOR", caption: "We have another repeated product to add to the collection! This really surprised me because the blue looks much nicer than the brown stripes. I originally said I would have scrolled away solely based on the stripes, but staying to watch the whole ad made me feel more compelled to buy. The \"look put together with no effort\" message in the caption resonated with me personally. I am always trying to pull together outfits without effort. I am a roll out of bed then walk out the door type of person. Madi's delivery really made me feel like \"Wow, maybe I do want to look put together and effortless\". I am passing on the product, but I was swayed a bit not going to lie." },
-  { image: "images/capture-2026-09-10-mug5vzet.jpg", capturedAt: "2026-09-10", creator: "@McKenzie Wren", caption: "The first thing I noticed about this capture, is McKenzie created a cozy vibe. The warm drink, the socks laid out, the emojis of leaves, a candle, and teddy bear got me excited for the fall season. I was picking up what she was putting down. Fall is my favorite season by far so there is no question that I already own cozy socks. But I want to note this is the first advertisement that creates a scene, a vibe, and plays off the seasonality of the product itself." },
-  { image: "images/capture-2026-09-11-mug9i2rz.jpg", capturedAt: "2026-09-11", creator: "@Nora", caption: "This backpack has been circulating around my feed for a while now so I wasn't too surprised when it popped up. I like how Nora showcased the functionality of the backpack by actually filling the backpack. #newsemester instead of #backtoschool implies that I may be in college and not middle or high school. The algorithm is correct in that sentiment. The 92.5% 4+ star reviews is a new tactic I haven't seen yet. I mentioned in a recent annotation to note the reviews and by listing it upfront, Nora may get people to jump on the backpack bandwagon quicker. It is cute, but I am not the type of person to replace something if it isn't broken and I love my current one." },
-  { image: "images/capture-2026-09-12-mugwam4s.jpg", capturedAt: "2026-09-12", creator: "@Heather | Barndo life", caption: "This capture combines multiple things I have said from my annotations into one ad. I'm seeing boots, fall fashion, #backtocampus, and Dr. Scholl's which is a brand know for their comfort and support. This is basically THE product for me. The algorithm has been listening and fine tuning to get a sense of what I am interested in. I was impressed by this pull, I would definitely add this to my wishlist if I didn't own boots that look just like these already. I love fall, I love boots, I love the brown paired with the cozy socks underneath. Very similar to my personal style." },
-  { image: "images/capture-2026-09-13-mugx676u.jpg", capturedAt: "2026-09-13", creator: "@Dicen Dunlap Reviews", caption: "The algorithm brought me back to this backpack. Same TikTok shop button listing the 4+ reviews, but the creator shows a new angle to the camera.  It's a cute backpack. The ad has pink emojis on the screen twice. Why a bikini and ballet shoes? They are unrelated to the backpack. School emojis would have been more appropriate to serve a larger audience. There is nothing pink about the video itself, so the emojis threw me off. Seeing it twice made me want it less because the video didn't add anything ground breaking or that I didn't already know from the first ad." },
-  { image: "images/capture-2026-09-14-muo1hqg5.jpg", capturedAt: "2026-09-14", creator: "@burt 2.0", caption: "This top looks oddly familiar. It's the same one as Hillary's but in a different color!! Real sneaky TikTok. I don't like that there's racks of clothes and purses in the background it makes me feel like this creator does this all day for a living pumping out content with different shirts, shoes, pants, etc. I am aware that most of them do, but this person isn't even hiding it, it's almost like they're proud. This makes me even more convinced that I don't want the shirt because it's not special, it is one of many tops this creator has added to the pile. I'm honestly disappointed and hope to see some more creative tactics in the future." },
-  { image: "images/capture-2026-09-15-muo2yk2e.jpg", capturedAt: "2026-09-15", creator: "@abbyshopsss", caption: "My feed served me belts before serving me an ad for pants. Interesting. I have seen a 2-in-1 reversible belt on the TikTok shop before where the buckle can be removed and flipped so I am also surprised to see a classic two pack instead. I'm not distracted by the background or Abby's outfit since it is a plain white tank top. The spotlight here are the belts. I noticed the TikTok shop button says \"Free returns\". This is the first time I am seeing this on an ad and it makes me question the product(s). Are these belts returned often? Why is this message included? If I were Abby, I would have left the returns piece out of the video and out of viewer's minds. Free is nice, but returns are not the goal for either party." },
-  { image: "images/capture-2026-09-16-muo3lr40.jpg", capturedAt: "2026-09-16", creator: "@tay", caption: "Third time's a charm? If I were to purchase a new backpack, it would probably be in black so I'm slightly back on board. What you don't see in this capture is Tay does a full 360 turn so you can view the backpack at all angles which helps her cause even more. The #neutralaesthetic is perfect for me, I like the effortless and classic look of things. This ad made me want to add it to my saved items for safe keeping due to the simple presentation of the backpack, seeing it in a color I would choose, and at the time, the 38% price drop. I am telling myself \"If it appears a fourth time, then it's a sign\" but for now, I will keep the product in mind." },
-  { image: "images/capture-2026-09-17-muo4h2o4.jpg", capturedAt: "2026-09-17", creator: "@Darilin Maria", caption: "The capture is so interesting. It looks like a collage of products or an art piece. If I hadn't read the caption, hashtags, or TikTok shop button I would have thought it was an ad for the cozy socks captured previously in this collection. The shoes aren't the centerpiece, there almost isn't one in my opinion. There's simply too much going on in the frame. I can't be sold to buy the shoes when they aren't even fully displayed on screen. What do they look like in the back? Are the shoes padded or wide foot friendly? What do they look like on? I am only left with questions." },
-  { image: "images/capture-2026-09-18-muo5mo7j.jpg", capturedAt: "2026-09-18", creator: "@diannascart", caption: "I LOVE the presentation of this ad because it doesn't even feel like one. There are so many Get Ready with Me (grwm) videos on TikTok so the outfit inspo format works the grwm trend effectively. This is also the first video that markets the product to be a knockoff aka dupe of the original. The original UGG slippers retail for over $120 on their website. This dupe is only $30. I could totally see myself considering the bargain deal if I didn't own a pair of UGG slippers already (it was a birthday gift a year ago). I would definitely be more compelled to purchase products in the future if they were served to me in a trendy format similar to this." },
-  { image: "images/capture-2026-09-19-muo6rrwe.jpg", capturedAt: "2026-09-19", creator: "@AL", caption: "Shoes, shoes, and more shoes! I guess the algorithm found out I like shoes, more specifically boots.. and the color black. I'm getting kinda scared with how good the machine has gotten at reading me. These boots aren't cute in my personal opinion, but rain boots never really are. Rain boots are meant to be waterproof so they aren't for style by nature, I just wish we could have both stylish and waterproof rain boots. It's 2026 people make cute rain boots for goodness sake! I have winter boots that are very similar to these and I use them for rainy days. I don't see a reason to buy another pair of boots that serve the same function of being weather proof. I'll save my money for the time being." },
-  { image: "images/capture-2026-09-20-muo84v07.jpg", capturedAt: "2026-09-20", creator: "@ellie", caption: "Something different for a change! These tops are marketed for workouts and gym athleisure which I think is interesting. I do not follow any form of fitness & health content on social media. There's nothing wow-ing me about these tops but maybe it's in the plain presentation of Ellie holding the other four tops in hands. Other creators have a quick transition where they change into each top for that eye catching reveal moment. I think the video is missing the showcase of each top. I am learning what ads get my attention, bore me, seem tacky, are fun and creative, etc. This ad landed flat and could have highlighted the 5-pack deal more brightly. Maybe Ellie will come back with a better presentation next time." },
-  { image: "images/capture-2026-09-21-mv3wrrha.jpg", capturedAt: "2026-09-21", creator: "@Robin", caption: "When I saw this top, I immediately thought about buying it. The product spoke for itself this time around because the more Robin spoke, the less convinced I was to add it to my cart. Robin claimed these shirts are what she \"Lives innnn\". After viewing her profile, I highly doubt it. She says that for every item of clothing she tries to sell on TikTok. The only thing that stopped me was the price. $39.99 is a lot for one top and for a grad student on a budget. The ads that play on affordable finds are much more appealing to me and this ad made me want to look online elsewhere for tops that are similar for a cheaper price tag." },
-  { image: "images/capture-2026-09-22-mv42lqlp.jpg", capturedAt: "2026-09-22", creator: "@Demanda", caption: "This top has made its fourth appearance and I'm surprised TikTok tried again. At its 50% off price tag, I would actually consider buying it at this point just so the ads stop! There is really nothing the shop could make me do at this point to convince me further that I \"need\" this besides making it damn near free. The ad itself doesn't do anything new or interesting that I haven't already seen from the first three I've seen. I think I've realized that these are just glorified t shirts." },
-  { image: "images/capture-2026-09-23-mv439xqb.jpg", capturedAt: "2026-09-23", creator: "@Riss | Easy Mom Style", caption: "The first thing I noticed in this post was the rack of coats, jackets, and vests off to the side. Then, my eyes went to the caption \"Post 4\". These creators really do this all day everyday huh? It made me feel like there was nothing special about the item. I am not a puffer nor a vest person anyways, so this is a pass. The hashtags made me laugh: #puffervest, #puffervestoutfits, #vest. The vest does come with a removable hood for those who are wondering. It seems like a decent product but the marketing tactics were giving bare minimum." },
-  { image: "images/capture-2026-09-24-mv44cjs5.jpg", capturedAt: "2026-09-24", creator: "@alliecheeto", caption: "I think I'm going to need one of these. The algorithm is learning! This men's quarter zip is perfect for fall and it comes with a hood. What's interesting is it doesn't look oversized, it looks just like a women's sized hoodie would. I am going to make a prediction now that there will be an advertisement almost identical to this one with the same product but in a different color based on the patterns we have been seeing so far in this collection. I may just buy it, it is a top contender on the prove me wrong category." },
-  { image: "images/capture-2026-09-25-mv44x5xc.jpg", capturedAt: "2026-09-25", creator: "@Fran Green", caption: "This is 100% my opinion but Old Navy Jeans Never. Ever. Disappoint. I love them and I am one of their top customers. I have nothing but good things to say about Old Navy jeans (not a sponsor). I think there are a lot of things working in this ad. The monochrome look with the black shirt, sunglasses, and jeans, the dog posed in frame. This is the first picture instead of a video advertisement, but it is so simple yet effective. You can scroll to see multiple angles of the jeans and it just works. I personally like to shop in store or on their actual website since they are cheaper, but I highly recommend the Old Navy mid-rise jeans in any style." },
-  { image: "images/capture-2026-09-26-mv45oluh.jpg", capturedAt: "2026-09-26", creator: "@Robin", caption: "I thought that background looked familiar. Robin is back already just a couple days later with a sweater from the same brand of the wool blend we've seen four times. I personally liked this delivery and product better. With winter coming up, I am looking for more long sleeved tops because I can only guess what a brutal winter we will have to endure this year. I only need one really good sweater I can rely on hence a #closetstaple so I definitely have this on my radar. 2 for 2 on the nice long sleeved tops from Robin. I'm impressed and am being proven wrong." },
-  { image: "images/capture-2026-09-27-mv46lusj.jpg", capturedAt: "2026-09-27", creator: "@Cassidy'sCuteFinds", caption: "This advertisement is interesting because it is the first one where the creator is replying to a comment from another ad about the same product. Ad inception if you will. The comment is positive and speaks to the benefit of the creator. Cassidy has graced our collection once before in week one. I noticed as I was watching the ad that she says \"Acid wash\" three times, included it on screen, and in the caption for a total of five times which is a tad redundant in my opinion. The other two colors that come in the 3 pack are black and beige. I am looking for sweaters or heavier tops, not lightweight long sleeve tops, but I can see the algorithm starting to take shape more and more as we go deeper into the collection. I think some winter products are on our radar just as the Christmas candy is sitting in the backrooms of grocery stores." },
+  { image: "images/capture-2026-08-31-mubhdyrs.jpg", capturedAt: "2026-08-31", creator: "@Itshillarycatherine", folder: "Shirts", caption: "Back in May and June, I was looking for clothes for my internship at the time. This top was actually in my saved items list over the summer until I removed it. The algorithm brought it back to try and change my mind. It is interesting how TikTok keeps a lot of what we view, click, like, etc. It remembered and made a second attempt months later." },
+  { image: "images/capture-2026-09-01-mubykpg8.jpg", capturedAt: "2026-09-01", creator: "@i shop tooo much", folder: "Shoes", caption: "The video says that the shoes are super comfortable and stretchy, but I know they wouldn't suit me. They aren't my style, I have flat feet, and wear orthotics in my shoes. I always need wider shoes in larger sizes that would fit inserts. I normally wear either boots or sneakers, so these wouldn't strike me as something I would ever want. This product just didn't hit the nail on the head for my personal tastes." },
+  { image: "images/capture-2026-09-02-mubzli2o.jpg", capturedAt: "2026-09-02", creator: "@Bailey Trost", folder: "Non-clothing", caption: "This body trimmer is nice, but I already own one that does the job well. I wouldn't spend my money on a product that serves the same function of a tool I already use and have learned to love over the years. The mirror is cool and the twistable unit is a selling point, but not a reason for me to buy a whole new one." },
+  { image: "images/capture-2026-09-03-mubzwsej.jpg", capturedAt: "2026-09-03", creator: "@theparenttrail", folder: "Shoes", caption: "Okay, so apparently my phone listens through my screen because now we have boots lol. It is the beginning of September, so I can see why the marketing tactic is buy it before winter while they are at a low price. I have a shoe collecting problem and I currently own three pairs of boots so I am passing on these. Maybe when my current boots fall apart, but that won't be this time around, nice try though, TikTok." },
+  { image: "images/capture-2026-09-04-muc06ggb.jpg", capturedAt: "2026-09-04", creator: "@Cassidy'sCuteFinds", folder: "Dresses", caption: "This dress would be lovely if I weren't five foot tall and had weddings to attend this fall. I truly don't have any occasions where I need to wear dresses to be honest, but the built in bra is a good selling point. I fear I would be swimming in the fabric and stumbling around if I bought this. I am more of a try it on in person type of gal when it comes to dresses!" },
+  { image: "images/capture-2026-09-05-muc0jumx.jpg", capturedAt: "2026-09-05", creator: "@justamomfinds", folder: "Non-clothing", caption: "This handheld sewing gun would be good for quick fixes for sure. I am not sold that the creator actually takes it with her \"literally everywhere\" from the caption. The caption seemed like more of an exaggeration to influence others to buy it. Very interesting and potentially useful product, but I when I saw it I didn't scream \"I NEED IT\". Not for me, but maybe for someone else." },
+  { image: "images/capture-2026-09-06-muc18bfn.jpg", capturedAt: "2026-09-06", creator: "@julesgracie", folder: "Shirts", caption: "To be completely honest and transparent, I am just not a stripe person. I like solid colors and plain pieces. I am interested in seeing whether or not the algorithm will bring this one back because if I weren't doing this capture project, I would have instantly scrolled away. Maybe my phone will listen again and show me the shirt in solid colors. Only time will tell." },
+  { image: "images/capture-2026-09-07-mufjffql.jpg", capturedAt: "2026-09-07", creator: "@Claraty || TT shop finds", folder: "Non-clothing", caption: "The caption for this ad made me laugh because \"ice maker\" is in quotes. It is really just an ice tray that when pressed, releases the ice cubes. There is nothing special or sticking out to me about the product, I have an ice maker at home. However, I noticed this post has a special listed on the TikTok shop button: FLASH SALE! I have definitely fallen victim in the past to a good \"deal\" with online shopping so it caught my eye. I urge viewers to think critically when seeing these sale items appear. Check for quality, reviews, and competing brands before buying on impulse." },
+  { image: "images/capture-2026-09-08-mug2john.jpg", capturedAt: "2026-09-08", creator: "@Itshillarycatherine", folder: "Shirts", caption: "Hillary is back for the second time! Same product, same creator, same room. I instantly noticed she changed out of jeans and into a skirt. The skirt and top combo is less appealing to me because I exclusively wear jeans. I am actually less influenced to buy this top now that I've seen it not once, not twice, but three times. I noticed it is basically the same ad but with new hashtags, dimensions listed on the screen, and more info included in the TikTok shop button. At this point in my scrolling, I would have selected the not interested button and hit repetitive as the reason but for the sake of this project, let's see just how many times this product pops up in my feed." },
+  { image: "images/capture-2026-09-09-mug3vvtn.jpg", capturedAt: "2026-09-09", creator: "@MADI TAYLOR", folder: "Shirts", caption: "We have another repeated product to add to the collection! This really surprised me because the blue looks much nicer than the brown stripes. I originally said I would have scrolled away solely based on the stripes, but staying to watch the whole ad made me feel more compelled to buy. The \"look put together with no effort\" message in the caption resonated with me personally. I am always trying to pull together outfits without effort. I am a roll out of bed then walk out the door type of person. Madi's delivery really made me feel like \"Wow, maybe I do want to look put together and effortless\". I am passing on the product, but I was swayed a bit not going to lie." },
+  { image: "images/capture-2026-09-10-mug5vzet.jpg", capturedAt: "2026-09-10", creator: "@McKenzie Wren", folder: "Socks", caption: "The first thing I noticed about this capture, is McKenzie created a cozy vibe. The warm drink, the socks laid out, the emojis of leaves, a candle, and teddy bear got me excited for the fall season. I was picking up what she was putting down. Fall is my favorite season by far so there is no question that I already own cozy socks. But I want to note this is the first advertisement that creates a scene, a vibe, and plays off the seasonality of the product itself." },
+  { image: "images/capture-2026-09-11-mug9i2rz.jpg", capturedAt: "2026-09-11", creator: "@Nora", folder: "Non-clothing", caption: "This backpack has been circulating around my feed for a while now so I wasn't too surprised when it popped up. I like how Nora showcased the functionality of the backpack by actually filling the backpack. #newsemester instead of #backtoschool implies that I may be in college and not middle or high school. The algorithm is correct in that sentiment. The 92.5% 4+ star reviews is a new tactic I haven't seen yet. I mentioned in a recent annotation to note the reviews and by listing it upfront, Nora may get people to jump on the backpack bandwagon quicker. It is cute, but I am not the type of person to replace something if it isn't broken and I love my current one." },
+  { image: "images/capture-2026-09-12-mugwam4s.jpg", capturedAt: "2026-09-12", creator: "@Heather | Barndo life", folder: "Shoes", caption: "This capture combines multiple things I have said from my annotations into one ad. I'm seeing boots, fall fashion, #backtocampus, and Dr. Scholl's which is a brand know for their comfort and support. This is basically THE product for me. The algorithm has been listening and fine tuning to get a sense of what I am interested in. I was impressed by this pull, I would definitely add this to my wishlist if I didn't own boots that look just like these already. I love fall, I love boots, I love the brown paired with the cozy socks underneath. Very similar to my personal style." },
+  { image: "images/capture-2026-09-13-mugx676u.jpg", capturedAt: "2026-09-13", creator: "@Dicen Dunlap Reviews", folder: "Non-clothing", caption: "The algorithm brought me back to this backpack. Same TikTok shop button listing the 4+ reviews, but the creator shows a new angle to the camera.  It's a cute backpack. The ad has pink emojis on the screen twice. Why a bikini and ballet shoes? They are unrelated to the backpack. School emojis would have been more appropriate to serve a larger audience. There is nothing pink about the video itself, so the emojis threw me off. Seeing it twice made me want it less because the video didn't add anything ground breaking or that I didn't already know from the first ad." },
+  { image: "images/capture-2026-09-14-muo1hqg5.jpg", capturedAt: "2026-09-14", creator: "@burt 2.0", folder: "Shirts", caption: "This top looks oddly familiar. It's the same one as Hillary's but in a different color!! Real sneaky TikTok. I don't like that there's racks of clothes and purses in the background it makes me feel like this creator does this all day for a living pumping out content with different shirts, shoes, pants, etc. I am aware that most of them do, but this person isn't even hiding it, it's almost like they're proud. This makes me even more convinced that I don't want the shirt because it's not special, it is one of many tops this creator has added to the pile. I'm honestly disappointed and hope to see some more creative tactics in the future." },
+  { image: "images/capture-2026-09-15-muo2yk2e.jpg", capturedAt: "2026-09-15", creator: "@abbyshopsss", folder: "Accessories", caption: "My feed served me belts before serving me an ad for pants. Interesting. I have seen a 2-in-1 reversible belt on the TikTok shop before where the buckle can be removed and flipped so I am also surprised to see a classic two pack instead. I'm not distracted by the background or Abby's outfit since it is a plain white tank top. The spotlight here are the belts. I noticed the TikTok shop button says \"Free returns\". This is the first time I am seeing this on an ad and it makes me question the product(s). Are these belts returned often? Why is this message included? If I were Abby, I would have left the returns piece out of the video and out of viewer's minds. Free is nice, but returns are not the goal for either party." },
+  { image: "images/capture-2026-09-16-muo3lr40.jpg", capturedAt: "2026-09-16", creator: "@tay", folder: "Non-clothing", caption: "Third time's a charm? If I were to purchase a new backpack, it would probably be in black so I'm slightly back on board. What you don't see in this capture is Tay does a full 360 turn so you can view the backpack at all angles which helps her cause even more. The #neutralaesthetic is perfect for me, I like the effortless and classic look of things. This ad made me want to add it to my saved items for safe keeping due to the simple presentation of the backpack, seeing it in a color I would choose, and at the time, the 38% price drop. I am telling myself \"If it appears a fourth time, then it's a sign\" but for now, I will keep the product in mind." },
+  { image: "images/capture-2026-09-17-muo4h2o4.jpg", capturedAt: "2026-09-17", creator: "@Darilin Maria", folder: "Shoes", caption: "The capture is so interesting. It looks like a collage of products or an art piece. If I hadn't read the caption, hashtags, or TikTok shop button I would have thought it was an ad for the cozy socks captured previously in this collection. The shoes aren't the centerpiece, there almost isn't one in my opinion. There's simply too much going on in the frame. I can't be sold to buy the shoes when they aren't even fully displayed on screen. What do they look like in the back? Are the shoes padded or wide foot friendly? What do they look like on? I am only left with questions." },
+  { image: "images/capture-2026-09-18-muo5mo7j.jpg", capturedAt: "2026-09-18", creator: "@diannascart", folder: "Shoes", caption: "I LOVE the presentation of this ad because it doesn't even feel like one. There are so many Get Ready with Me (grwm) videos on TikTok so the outfit inspo format works the grwm trend effectively. This is also the first video that markets the product to be a knockoff aka dupe of the original. The original UGG slippers retail for over $120 on their website. This dupe is only $30. I could totally see myself considering the bargain deal if I didn't own a pair of UGG slippers already (it was a birthday gift a year ago). I would definitely be more compelled to purchase products in the future if they were served to me in a trendy format similar to this." },
+  { image: "images/capture-2026-09-19-muo6rrwe.jpg", capturedAt: "2026-09-19", creator: "@AL", folder: "Shoes", caption: "Shoes, shoes, and more shoes! I guess the algorithm found out I like shoes, more specifically boots.. and the color black. I'm getting kinda scared with how good the machine has gotten at reading me. These boots aren't cute in my personal opinion, but rain boots never really are. Rain boots are meant to be waterproof so they aren't for style by nature, I just wish we could have both stylish and waterproof rain boots. It's 2026 people make cute rain boots for goodness sake! I have winter boots that are very similar to these and I use them for rainy days. I don't see a reason to buy another pair of boots that serve the same function of being weather proof. I'll save my money for the time being." },
+  { image: "images/capture-2026-09-20-muo84v07.jpg", capturedAt: "2026-09-20", creator: "@ellie", folder: "Shirts", caption: "Something different for a change! These tops are marketed for workouts and gym athleisure which I think is interesting. I do not follow any form of fitness & health content on social media. There's nothing wow-ing me about these tops but maybe it's in the plain presentation of Ellie holding the other four tops in hands. Other creators have a quick transition where they change into each top for that eye catching reveal moment. I think the video is missing the showcase of each top. I am learning what ads get my attention, bore me, seem tacky, are fun and creative, etc. This ad landed flat and could have highlighted the 5-pack deal more brightly. Maybe Ellie will come back with a better presentation next time." },
+  { image: "images/capture-2026-09-21-mv3wrrha.jpg", capturedAt: "2026-09-21", creator: "@Robin", folder: "Shirts", caption: "When I saw this top, I immediately thought about buying it. The product spoke for itself this time around because the more Robin spoke, the less convinced I was to add it to my cart. Robin claimed these shirts are what she \"Lives innnn\". After viewing her profile, I highly doubt it. She says that for every item of clothing she tries to sell on TikTok. The only thing that stopped me was the price. $39.99 is a lot for one top and for a grad student on a budget. The ads that play on affordable finds are much more appealing to me and this ad made me want to look online elsewhere for tops that are similar for a cheaper price tag." },
+  { image: "images/capture-2026-09-22-mv42lqlp.jpg", capturedAt: "2026-09-22", creator: "@Demanda", folder: "Shirts", caption: "This top has made its fourth appearance and I'm surprised TikTok tried again. At its 50% off price tag, I would actually consider buying it at this point just so the ads stop! There is really nothing the shop could make me do at this point to convince me further that I \"need\" this besides making it damn near free. The ad itself doesn't do anything new or interesting that I haven't already seen from the first three I've seen. I think I've realized that these are just glorified t shirts." },
+  { image: "images/capture-2026-09-23-mv439xqb.jpg", capturedAt: "2026-09-23", creator: "@Riss | Easy Mom Style", folder: "Coats/Jackets", caption: "The first thing I noticed in this post was the rack of coats, jackets, and vests off to the side. Then, my eyes went to the caption \"Post 4\". These creators really do this all day everyday huh? It made me feel like there was nothing special about the item. I am not a puffer nor a vest person anyways, so this is a pass. The hashtags made me laugh: #puffervest, #puffervestoutfits, #vest. The vest does come with a removable hood for those who are wondering. It seems like a decent product but the marketing tactics were giving bare minimum." },
+  { image: "images/capture-2026-09-24-mv44cjs5.jpg", capturedAt: "2026-09-24", creator: "@alliecheeto", folder: "Coats/Jackets", caption: "I think I'm going to need one of these. The algorithm is learning! This men's quarter zip is perfect for fall and it comes with a hood. What's interesting is it doesn't look oversized, it looks just like a women's sized hoodie would. I am going to make a prediction now that there will be an advertisement almost identical to this one with the same product but in a different color based on the patterns we have been seeing so far in this collection. I may just buy it, it is a top contender on the prove me wrong category." },
+  { image: "images/capture-2026-09-25-mv44x5xc.jpg", capturedAt: "2026-09-25", creator: "@Fran Green", folder: "Pants", caption: "This is 100% my opinion but Old Navy Jeans Never. Ever. Disappoint. I love them and I am one of their top customers. I have nothing but good things to say about Old Navy jeans (not a sponsor). I think there are a lot of things working in this ad. The monochrome look with the black shirt, sunglasses, and jeans, the dog posed in frame. This is the first picture instead of a video advertisement, but it is so simple yet effective. You can scroll to see multiple angles of the jeans and it just works. I personally like to shop in store or on their actual website since they are cheaper, but I highly recommend the Old Navy mid-rise jeans in any style." },
+  { image: "images/capture-2026-09-26-mv45oluh.jpg", capturedAt: "2026-09-26", creator: "@Robin", folder: "Shirts", caption: "I thought that background looked familiar. Robin is back already just a couple days later with a sweater from the same brand of the wool blend we've seen four times. I personally liked this delivery and product better. With winter coming up, I am looking for more long sleeved tops because I can only guess what a brutal winter we will have to endure this year. I only need one really good sweater I can rely on hence a #closetstaple so I definitely have this on my radar. 2 for 2 on the nice long sleeved tops from Robin. I'm impressed and am being proven wrong." },
+  { image: "images/capture-2026-09-27-mv46lusj.jpg", capturedAt: "2026-09-27", creator: "@Cassidy'sCuteFinds", folder: "Shirts", caption: "This advertisement is interesting because it is the first one where the creator is replying to a comment from another ad about the same product. Ad inception if you will. The comment is positive and speaks to the benefit of the creator. Cassidy has graced our collection once before in week one. I noticed as I was watching the ad that she says \"Acid wash\" three times, included it on screen, and in the caption for a total of five times which is a tad redundant in my opinion. The other two colors that come in the 3 pack are black and beige. I am looking for sweaters or heavier tops, not lightweight long sleeve tops, but I can see the algorithm starting to take shape more and more as we go deeper into the collection. I think some winter products are on our radar just as the Christmas candy is sitting in the backrooms of grocery stores." },
 ];
+
 function fmtDate(d){
   if(!d) return '';
   const dt = new Date(d);
@@ -608,9 +694,49 @@ function downloadCanvas(canvas, filename){
 let allPosts = [...POSTS];
 let pendingImage = null; // {canvas, dataUrl}
 
+// ---------- folder helpers ----------
+function folderNames(){
+  const present = new Set(allPosts.map(p=>p.folder).filter(Boolean));
+  const ordered = FOLDER_ORDER.filter(f=>present.has(f));
+  const extras = Array.from(present).filter(f=>FOLDER_ORDER.indexOf(f) === -1);
+  return ordered.concat(extras);
+}
+function postsIn(name){
+  return name === ALL ? allPosts : allPosts.filter(p=>p.folder === name);
+}
+function coverFor(list){
+  // most recent capture in the list
+  let best = null;
+  list.forEach(p=>{
+    if(!best || String(p.capturedAt) >= String(best.capturedAt)) best = p;
+  });
+  return best;
+}
+function currentRoute(){
+  let h = location.hash.replace(/^#/, '');
+  try{ h = decodeURIComponent(h); }catch(e){}
+  return h.indexOf('f=') === 0 ? h.slice(2) : null;
+}
+function openFolder(name){
+  location.hash = 'f=' + encodeURIComponent(name);
+}
+
+function populateFolderSelect(){
+  const sel = document.getElementById('capFolder');
+  const prev = sel.value;
+  const names = FOLDER_ORDER.concat(folderNames().filter(f=>FOLDER_ORDER.indexOf(f) === -1));
+  sel.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+    + '<option value="__new__">+ New folder…</option>';
+  if(prev && Array.from(sel.options).some(o=>o.value === prev)) sel.value = prev;
+}
+
 // ---------- form interactions ----------
 document.getElementById('toggleForm').addEventListener('click', ()=>{
   document.getElementById('captureForm').classList.toggle('open');
+});
+
+document.getElementById('capFolder').addEventListener('change', (e)=>{
+  document.getElementById('newFolderField').style.display = e.target.value === '__new__' ? 'block' : 'none';
 });
 
 document.getElementById('fileDrop').addEventListener('click', ()=>{
@@ -632,6 +758,11 @@ document.getElementById('submitCapture').addEventListener('click', ()=>{
   const date = document.getElementById('capDate').value || new Date().toISOString().slice(0,10);
   const creator = document.getElementById('capCreator').value.trim();
   const caption = document.getElementById('capCaption').value.trim();
+  let folder = document.getElementById('capFolder').value;
+  if(folder === '__new__'){
+    folder = document.getElementById('capNewFolder').value.trim();
+    if(!folder){ status.textContent = 'Name the new folder first.'; return; }
+  }
 
   const filename = `capture-${date}-${Date.now().toString(36)}.jpg`;
   downloadCanvas(pendingImage.canvas, filename);
@@ -640,25 +771,27 @@ document.getElementById('submitCapture').addEventListener('click', ()=>{
     image: pendingImage.dataUrl, // local preview only; committed version uses the images/ path below
     capturedAt: date,
     creator: creator,
+    folder: folder,
     caption: caption
   };
   allPosts = [newPost, ...allPosts];
-  renderFeed();
-  renderStats();
+  populateFolderSelect();
+  render();
 
   const snippet =
-`  { image: "images/${filename}", capturedAt: "${date}", creator: ${JSON.stringify(creator)}, caption: ${JSON.stringify(caption)} },`;
+`  { image: "images/${filename}", capturedAt: "${date}", creator: ${JSON.stringify(creator)}, folder: ${JSON.stringify(folder)}, caption: ${JSON.stringify(caption)} },`;
   const snippetBox = document.getElementById('snippetBox');
   const snippetText = document.getElementById('snippetText');
   snippetText.value = snippet;
   snippetBox.classList.add('show');
 
-  status.textContent = 'Previewed below — finish the 3 steps to make it permanent.';
+  status.textContent = 'Previewed in the "' + folder + '" folder — finish the 3 steps to make it permanent.';
 
   pendingImage = null;
   document.getElementById('capCreator').value = '';
   document.getElementById('capCaption').value = '';
   document.getElementById('capDate').value = '';
+  document.getElementById('capNewFolder').value = '';
   document.getElementById('filePreview').style.display = 'none';
   document.getElementById('fileDropText').textContent = 'Click to choose a screenshot, or drag one here';
   document.getElementById('fileInput').value = '';
@@ -670,14 +803,34 @@ document.getElementById('copySnippet').addEventListener('click', ()=>{
   navigator.clipboard.writeText(snippetText.value).catch(()=>{ document.execCommand('copy'); });
 });
 
-// ---------- render feed ----------
-function renderFeed(){
+// ---------- render: folders (album view) ----------
+function renderAlbums(){
+  const wrap = document.getElementById('albums');
+  const names = [ALL].concat(folderNames());
+  wrap.innerHTML = names.map((name, i)=>{
+    const list = postsIn(name);
+    const cover = coverFor(list);
+    const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
+    return `
+    <button type="button" class="album ${accent}" data-folder="${escapeHtml(name)}">
+      <div class="album-cover">${cover ? `<img src="${cover.image}" alt="">` : ''}</div>
+      <div class="album-name">${escapeHtml(name)}</div>
+      <div class="album-count">${list.length} ${list.length === 1 ? 'capture' : 'captures'}</div>
+    </button>`;
+  }).join('');
+  wrap.querySelectorAll('.album').forEach(btn=>{
+    btn.addEventListener('click', ()=> openFolder(btn.dataset.folder));
+  });
+}
+
+// ---------- render: one folder's captures ----------
+function renderFeed(list){
   const feed = document.getElementById('feed');
-  if(allPosts.length === 0){
-    feed.innerHTML = '<div class="empty">No captures logged yet.</div>';
+  if(list.length === 0){
+    feed.innerHTML = '<div class="empty">No captures in this folder yet.</div>';
     return;
   }
-  feed.innerHTML = allPosts.map((p, i)=>{
+  feed.innerHTML = list.map((p, i)=>{
     const accent = i % 2 === 0 ? 'accent-blue' : 'accent-red';
     return `
     <div class="card ${accent}">
@@ -720,7 +873,7 @@ function wireCardInteractions(){
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str || '';
-  return d.innerHTML;
+  return d.innerHTML.replace(/"/g, '&quot;');
 }
 
 // ---------- stats ----------
@@ -730,9 +883,32 @@ function renderStats(){
   document.getElementById('stat-days').textContent = uniqueDays;
 }
 
+// ---------- main render + routing ----------
+function render(){
+  renderStats();
+  const route = currentRoute();
+  const inFolder = route !== null && (route === ALL || folderNames().indexOf(route) !== -1);
+  document.getElementById('albumsView').style.display = inFolder ? 'none' : 'block';
+  document.getElementById('folderView').style.display = inFolder ? 'block' : 'none';
+  if(inFolder){
+    const list = postsIn(route);
+    document.getElementById('folderTitle').textContent = route;
+    document.getElementById('folderCount').textContent = list.length + (list.length === 1 ? ' capture' : ' captures');
+    renderFeed(list);
+  } else {
+    renderAlbums();
+  }
+}
+
+window.addEventListener('hashchange', ()=>{
+  render();
+  const top = document.getElementById('viewTop');
+  if(top && top.scrollIntoView) top.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
 // ---------- init ----------
-renderFeed();
-renderStats();
+populateFolderSelect();
+render();
 
 // cursor-follow glow
 (function(){
