@@ -127,6 +127,8 @@
   section{padding:44px 0;}
 
   /* ---------- capture toggle + form ---------- */
+  .admin-only{ display:none; }
+  body.is-admin .admin-only{ display:block; }
   .add-btn{
     font-family:'Fredoka',sans-serif;
     background:linear-gradient(135deg, var(--blue), var(--red));
@@ -553,6 +555,8 @@
   <div class="wrap">
     <p class="section-sub" style="margin-left:0;">All captures are organically occurring For You Page ads, TikTok Shop-linked, creator-for-commission content, and excluding AI-generated media. Scroll to browse. Click to view annotations. Disclaimer — product arrangement, organization, and layout will be updated weekly.</p>
 
+    <!-- ADMIN ONLY: hidden from visitors. Shown when the page is opened with ?admin (or #admin) -->
+    <div class="admin-only" id="adminTools">
     <button class="add-btn" id="toggleForm">+ LOG A NEW CAPTURE</button>
 
     <div class="capture-form" id="captureForm">
@@ -607,6 +611,8 @@
         </div>
       </div>
     </div>
+
+    </div><!-- /adminTools -->
 
     <div id="viewTop"></div>
 
@@ -762,6 +768,23 @@ function populateFolderSelect(){
     + '<option value="__new__">+ New folder…</option>';
   if(prev && Array.from(sel.options).some(o=>o.value === prev)) sel.value = prev;
 }
+
+// ---------- admin mode (hidden log-a-capture tools) ----------
+// Open the page with ?admin (or #admin) to unlock the form. Stays on for this browser until you open ?admin=off.
+(function(){
+  let on = false;
+  try{
+    const q = new URLSearchParams(location.search).get('admin');
+    if(q === 'off'){ localStorage.removeItem('captureAdmin'); }
+    else if(q !== null || location.hash === '#admin'){ localStorage.setItem('captureAdmin','1'); }
+    on = localStorage.getItem('captureAdmin') === '1';
+  }catch(e){
+    // storage blocked: fall back to the address alone
+    const q = new URLSearchParams(location.search).get('admin');
+    on = (q !== null && q !== 'off') || location.hash === '#admin';
+  }
+  if(on) document.body.classList.add('is-admin');
+})();
 
 // ---------- form interactions ----------
 document.getElementById('toggleForm').addEventListener('click', ()=>{
