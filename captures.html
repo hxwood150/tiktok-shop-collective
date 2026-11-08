@@ -528,60 +528,49 @@
     transform:translateY(0);
   }
 
-  /* ---------- final reflections ---------- */
-  .final-reflections{
-    margin-top:70px;
-    padding:38px 30px 34px;
+  /* ---------- "you've reached the end" button ---------- */
+  .end-wrap{ margin-top:70px; }
+  .end-btn{
+    position:relative; display:block; overflow:hidden;
+    text-decoration:none; text-align:center;
+    font-family:'Fredoka',sans-serif; font-weight:700;
+    font-size:clamp(20px,4.6vw,32px); letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--black);
+    background:linear-gradient(135deg, var(--blue), var(--red));
+    padding:38px 24px 34px;
     border-radius:26px;
-    border:3px solid var(--red);
-    background:
-      radial-gradient(circle at 0% 0%, rgba(0,229,255,0.16), transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(255,42,77,0.18), transparent 50%),
-      var(--panel);
-    box-shadow:0 8px 0 rgba(0,0,0,0.4), 0 0 40px rgba(255,42,77,0.22);
+    box-shadow:0 8px 0 rgba(0,0,0,0.4), 0 0 30px rgba(0,229,255,0.25);
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
+    -webkit-tap-highlight-color:transparent;
   }
-  .fr-end{
-    display:inline-block;
-    font-family:'Fredoka',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.08em;
-    color:var(--black); background:var(--blue);
-    padding:6px 14px; border-radius:999px; margin-bottom:16px;
+  .end-btn small{
+    display:block; margin-top:10px;
+    font-family:'Inter',sans-serif; font-weight:500; font-size:14.5px; letter-spacing:0.02em; text-transform:none;
+    opacity:0.85;
   }
-  .final-reflections h2.fr-title{
-    font-family:'TikTok Sans','Fredoka',sans-serif; font-weight:700;
-    font-size:clamp(30px,6vw,46px); line-height:1.05; margin:0 0 20px;
-    color:var(--white);
-    border-left:6px solid var(--red); border-radius:3px; padding-left:18px;
-    text-shadow:0 0 22px rgba(255,42,77,0.35);
+  .end-btn .arrow{ display:inline-block; margin-left:10px; transition:transform .25s ease; }
+  /* glare: a bright diagonal streak that sweeps across, then rests */
+  .end-btn::before{
+    content:""; position:absolute; top:-60%; left:-70%;
+    width:38%; height:220%;
+    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%);
+    transform:skewX(-20deg);
+    animation:endGlare 3.8s ease-in-out infinite;
+    pointer-events:none;
   }
-  .final-reflections p{ color:var(--white); font-size:16.5px; line-height:1.65; max-width:760px; margin:0 0 16px; }
-  .fr-label{
-    display:block; margin:30px 0 14px;
-    font-family:'Fredoka',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--blue);
+  @keyframes endGlare{ 0%{ left:-70%; } 32%,100%{ left:150%; } }
+  .end-btn:hover, .end-btn:focus-visible{
+    transform:translateY(-5px) scale(1.025);
+    box-shadow:0 14px 0 rgba(0,0,0,0.4), 0 0 48px rgba(0,229,255,0.5), 0 0 70px rgba(255,42,77,0.35);
+    outline:none;
   }
-  .fr-moments{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px; }
-  .fr-moment{
-    background:var(--black); border:2px solid var(--line); border-radius:16px; padding:16px 18px;
+  .end-btn:hover::before, .end-btn:focus-visible::before{ animation-duration:1s; }
+  .end-btn:hover .arrow, .end-btn:focus-visible .arrow{ transform:translateX(10px); }
+  .end-btn:active{ transform:translateY(1px) scale(0.99); box-shadow:0 3px 0 rgba(0,0,0,0.4); }
+  @media (prefers-reduced-motion:reduce){
+    .end-btn::before{ animation:none; opacity:0; }
+    .end-btn, .end-btn .arrow{ transition:none; }
   }
-  .fr-moment:nth-child(odd){ border-color:var(--blue-dim); }
-  .fr-moment:nth-child(even){ border-color:var(--red-dim); }
-  .fr-moment b{
-    display:block; font-family:'Fredoka',sans-serif; font-size:12px; letter-spacing:0.04em; margin-bottom:6px;
-    color:var(--blue);
-  }
-  .fr-moment:nth-child(even) b{ color:var(--red); }
-  .fr-moment p{ font-size:14.5px; line-height:1.55; margin:0; color:var(--white); }
-  .fr-questions{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; max-width:760px; }
-  .fr-questions li{
-    position:relative; padding:14px 18px 14px 46px;
-    background:var(--black); border:2px solid var(--line); border-radius:14px;
-    font-family:'TikTok Sans','Fredoka',sans-serif; font-weight:500; font-size:17px; line-height:1.4;
-  }
-  .fr-questions li::before{
-    content:"?"; position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; color:var(--red);
-  }
-  .fr-close{ margin-top:26px !important; font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px !important; color:var(--blue) !important; }
 </style>
 </head>
 <body>
@@ -689,29 +678,11 @@
 
 <section class="reveal" style="padding-top:0;">
   <div class="wrap">
-    <!-- FINAL REFLECTIONS: edit the text below any time (it is plain HTML) -->
-    <div class="final-reflections" id="finalReflections">
-      <span class="fr-end">YOU'VE REACHED THE END</span>
-      <h2 class="fr-title">Final Reflections</h2>
-
-      <p>When I started, I said my algorithm was convinced it knew what I would buy, and that I didn't think it was right. After <span id="frCount">all</span> captures, the answer is more complicated. It was often right about what I like: boots, cozy fall style, quarter zips, even products I had already bought. But knowing my taste is not the same as getting me to buy. Most of the time I passed because I already owned something similar, the price was too high, the video didn't show enough, or a comment talked me out of it.</p>
-      <p>What I didn't expect was how much this project would change the way I watch ads. Annotating every capture taught me to notice the tactics: repeated products in new colors, sale tags, urgency, and creators who sell the same thing over and over. It also made me wonder whether sharing these products with you is doing some of the algorithm's work for it.</p>
-
-      <span class="fr-label">Moments that stuck with me</span>
-      <div class="fr-moments">
-        <div class="fr-moment"><b>WHERE IT STARTED · AUG 31</b><p>The algorithm brought back a top I had removed from my saved items. It remembered and made a second attempt months later.</p></div>
-        <div class="fr-moment"><b>WHAT I LEARNED · OCT 8</b><p>I skipped the cardigan but followed the creator instead. I know my likes, interests, and budget, and I keep discovering new things through my feed.</p></div>
-        <div class="fr-moment"><b>THE TWIST · OCT 11</b><p>If I'm a fan of a product, it turns into an ad. Even my annotations can work as ads, which may mean I'm proving the algorithm right.</p></div>
-      </div>
-
-      <span class="fr-label">Questions for you</span>
-      <ul class="fr-questions">
-        <li>Which of these ads would have worked on you?</li>
-        <li>If an algorithm only knew what you scrolled past, what would it say about you?</li>
-        <li>When did you last buy something because it showed up in your feed, not because you went looking for it?</li>
-      </ul>
-
-      <p class="fr-close">Next time an ad stops your scroll, ask what it thinks it knows about you.</p>
+    <div class="end-wrap">
+      <a class="end-btn" href="final-reflections.html">
+        You've reached the end <span class="arrow">→</span>
+        <small>Want to exit? Click here</small>
+      </a>
     </div>
   </div>
 </section>
@@ -1070,12 +1041,7 @@ function escapeHtml(str){
 }
 
 // ---------- stats ----------
-function renderFrCount(){
-  const el = document.getElementById('frCount');
-  if(el) el.textContent = allPosts.length;
-}
 function renderStats(){
-  renderFrCount();
   document.getElementById('stat-total').textContent = allPosts.length;
   const uniqueDays = new Set(allPosts.map(p=>p.capturedAt)).size;
   document.getElementById('stat-days').textContent = uniqueDays;
